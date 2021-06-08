@@ -1,7 +1,6 @@
 import PySimpleGUI as sg
 from scipy.interpolate import interp1d
 from os_memory import *
-
 '''processes_dict = {'p1': [("Code", 30, 40), ("Data", 0, 30), ("Stack", 100, 200)],
               'p2': [("Code", 70, 20), ("Data", 300, 50), ("Stack", 350, 100)]}'''
 
@@ -181,7 +180,7 @@ while True:
             elif values['worst']:
                 processes_dict, size_check = processes_class.worst_fit(process_index, segments)
 
-            if size_check == 1:
+            if size_check == 0:
                 sg.popup('failed to allocate memory for Process ' + str(process_index), title='Warning')
 
             segments = []

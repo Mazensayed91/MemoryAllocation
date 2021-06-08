@@ -67,13 +67,22 @@ class DynamicAllocator:
         elif algo_index == 2:
             self.holes.sort(key=lambda x: x[1], reverse=True)
 
-        size_check = 0
-        for segmentation in segmentations:
-            for index, hole in enumerate(self.holes):
-                if segmentation[1] > hole[1]:
-                    size_check = 1
+        virtual_memory = self.memory.copy()
+        virtual_holes = [hole[:] for hole in holes]
+        virtual_memory['p' + str(process_index)] = []
 
-        if size_check == 0:
+        segmentation_counter = 0
+
+        for segmentation in segmentations:
+            for index, hole in enumerate(virtual_holes):
+                if segmentation[1] <= hole[1]:
+                    virtual_memory['p' + str(process_index)].append([segmentation[0], hole[0], segmentation[1]])
+                    virtual_holes[index][1] -= segmentation[1]
+                    virtual_holes[index][0] += segmentation[1]
+                    segmentation_counter += 1
+                    break
+        print(segmentation_counter)
+        if segmentation_counter == len(segmentations):
             self.memory['p' + str(process_index)] = []
 
             for segmentation in segmentations:
@@ -84,8 +93,41 @@ class DynamicAllocator:
                         self.holes[index][0] += segmentation[1]
                         break
 
-        return self.memory, size_check
+        # if len(segmentations) != segmentation_counter:
+        #     for segmentation in segmentations:
+        #         for index, hole in enumerate(self.holes):
+        #             if segmentation[1] <= hole[1]:
+        #                 self.memory['p' + str(process_index)].append([segmentation[0], hole[0], segmentation[1]])
+        #                 self.holes[index][1] -= segmentation[1]
+        #                 self.holes[index][0] += segmentation[1]
+        #                 segmentation_counter += 1
+        #                 break
 
+        return self.memory, segmentation_counter == len(segmentations)
+
+    # def merge_holes(self):
+    #     self.holes.sort(key=lambda x: x[0])
+    #     holes_merged = []
+    #     merging_flag = 0
+    #     while ~merging_flag:
+    #         merging_flag = 0
+    #         # [[0, 100]]
+    #         for index, hole in enumerate(self.holes):
+    #             if index < len(self.holes)-1:
+    #                 if hole[0] + hole[1] >= self.holes[index+1][0]:
+    #                     holes_merged.append([hole[0], hole[1] + self.holes[index+1][1]])
+    #                     merging_flag = 1
+    #                     break
+    #                 else:
+    #                     holes_merged.append(hole)
+    #             else:
+    #                 holes_merged.append(hole)
+    #                 merging_flag = 1
+    #
+    #         self.holes = [hole[:] for hole in holes_merged]
+    #         holes_merged = []
+
+    #[[0,100],[50,100],[80,120]]
     def merge_holes(self):
         self.holes.sort(key=lambda x: x[0])
         number_of_holes = len(self.holes)
