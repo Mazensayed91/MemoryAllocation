@@ -79,7 +79,12 @@ while True:
         break
     elif event == 'Add Hole':
         try:
-            holes.append([int(values['1']), int(values['2'])])
+            hole_start = int(values['1'])
+            hole_size = int(values['2'])
+            if hole_start < 0 or hole_size <= 0:
+                sg.popup_error('Hole\'s starting address and size must be greater than zero', title='Error')
+            else:
+                holes.append([hole_start, hole_size])
 
         except ValueError:
             sg.popup_error('Hole\'s starting address and size must be integer', title='Error')
@@ -97,7 +102,12 @@ while True:
 
     elif event == 'Add Segment':
         try:
-            segments.append([values['1'], int(values['2'])])
+            segment_name = values['1']
+            segment_size = int(values['2'])
+            if segment_size <= 0:
+                sg.popup_error('Segment size must be greater than zero', title='Error')
+            else:
+                segments.append([segment_name, segment_size])
 
         except ValueError:
             sg.popup_error('Segment size must be integer', title='Error')
@@ -129,7 +139,7 @@ while True:
 
     elif event == 'Next':
         try:
-            Mem_size = int(values['Mem_in'])
+            Mem_size = abs(int(values['Mem_in']))
 
         except ValueError:
             sg.popup('Invalid Memory size, size will be set to default (512).', title='Warning')
@@ -165,11 +175,15 @@ while True:
         # Update values of menu.
         if len(segments) != 0:
             if values['best']:
-                processes_dict = processes_class.best_fit(process_index, segments)
+                processes_dict, size_check = processes_class.best_fit(process_index, segments)
             elif values['first']:
-                processes_dict = processes_class.first_fit(process_index, segments, 0)
+                processes_dict, size_check = processes_class.first_fit(process_index, segments, 0)
             elif values['worst']:
-                processes_dict = processes_class.worst_fit(process_index, segments)
+                processes_dict, size_check = processes_class.worst_fit(process_index, segments)
+
+            if size_check == 1:
+                sg.popup('failed to allocate memory for Process ' + str(process_index), title='Warning')
+
             segments = []
             graph2.erase()
             process_index += 1

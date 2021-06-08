@@ -10,6 +10,9 @@ class DynamicAllocator:
         self.merge_holes()
         self.holes.sort()
 
+        if len(self.holes) == 0:
+            self.holes.append([0, 0])
+
         if self.holes[0][0] > 0:
             size = self.holes[0][0]
             self.memory['oldProcess ' + str(1)] = [["", 0, size]]
@@ -42,7 +45,10 @@ class DynamicAllocator:
         start = self.holes[-1][0] + self.holes[-1][1]
         size = self.mem_size - start
         if size > 0:
-            self.memory['oldProcess ' + str(len(self.holes) + 1)] = [["", start, size]]
+            if len(self.holes) > 1:
+                self.memory['oldProcess ' + str(len(self.holes) + 1)] = [["", start, size]]
+            else:
+                self.memory['oldProcess ' + str(len(self.holes))] = [["", start, size]]
 
         return self.memory
 
@@ -60,17 +66,25 @@ class DynamicAllocator:
             self.holes.sort(key=lambda x: x[1])
         elif algo_index == 2:
             self.holes.sort(key=lambda x: x[1], reverse=True)
-        self.memory['p' + str(process_index)] = []
 
+        size_check = 0
         for segmentation in segmentations:
             for index, hole in enumerate(self.holes):
-                if segmentation[1] <= hole[1]:
-                    self.memory['p' + str(process_index)].append([segmentation[0], hole[0], segmentation[1]])
-                    self.holes[index][1] -= segmentation[1]
-                    self.holes[index][0] += segmentation[1]
-                    break
+                if segmentation[1] > hole[1]:
+                    size_check = 1
 
-        return self.memory
+        if size_check == 0:
+            self.memory['p' + str(process_index)] = []
+
+            for segmentation in segmentations:
+                for index, hole in enumerate(self.holes):
+                    if segmentation[1] <= hole[1]:
+                        self.memory['p' + str(process_index)].append([segmentation[0], hole[0], segmentation[1]])
+                        self.holes[index][1] -= segmentation[1]
+                        self.holes[index][0] += segmentation[1]
+                        break
+
+        return self.memory, size_check
 
     # def merge_holes(self):
     #     self.holes.sort(key=lambda x: x[0])
