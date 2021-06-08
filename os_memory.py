@@ -68,7 +68,7 @@ class DynamicAllocator:
             self.holes.sort(key=lambda x: x[1], reverse=True)
 
         virtual_memory = self.memory.copy()
-        virtual_holes = [hole[:] for hole in holes]
+        virtual_holes = [hole[:] for hole in self.holes]
         virtual_memory['p' + str(process_index)] = []
 
         segmentation_counter = 0
@@ -93,41 +93,8 @@ class DynamicAllocator:
                         self.holes[index][0] += segmentation[1]
                         break
 
-        # if len(segmentations) != segmentation_counter:
-        #     for segmentation in segmentations:
-        #         for index, hole in enumerate(self.holes):
-        #             if segmentation[1] <= hole[1]:
-        #                 self.memory['p' + str(process_index)].append([segmentation[0], hole[0], segmentation[1]])
-        #                 self.holes[index][1] -= segmentation[1]
-        #                 self.holes[index][0] += segmentation[1]
-        #                 segmentation_counter += 1
-        #                 break
-
         return self.memory, segmentation_counter == len(segmentations)
 
-    # def merge_holes(self):
-    #     self.holes.sort(key=lambda x: x[0])
-    #     holes_merged = []
-    #     merging_flag = 0
-    #     while ~merging_flag:
-    #         merging_flag = 0
-    #         # [[0, 100]]
-    #         for index, hole in enumerate(self.holes):
-    #             if index < len(self.holes)-1:
-    #                 if hole[0] + hole[1] >= self.holes[index+1][0]:
-    #                     holes_merged.append([hole[0], hole[1] + self.holes[index+1][1]])
-    #                     merging_flag = 1
-    #                     break
-    #                 else:
-    #                     holes_merged.append(hole)
-    #             else:
-    #                 holes_merged.append(hole)
-    #                 merging_flag = 1
-    #
-    #         self.holes = [hole[:] for hole in holes_merged]
-    #         holes_merged = []
-
-    #[[0,100],[50,100],[80,120]]
     def merge_holes(self):
         self.holes.sort(key=lambda x: x[0])
         number_of_holes = len(self.holes)
@@ -139,8 +106,6 @@ class DynamicAllocator:
                 number_of_holes -= 1
                 index -= 1
             index += 1
-
-
 
     def best_fit(self, process_index, segmentations):
         return self.first_fit(process_index, segmentations, 1)

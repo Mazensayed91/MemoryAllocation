@@ -1,9 +1,6 @@
 import PySimpleGUI as sg
 from scipy.interpolate import interp1d
 from os_memory import *
-'''processes_dict = {'p1': [("Code", 30, 40), ("Data", 0, 30), ("Stack", 100, 200)],
-              'p2': [("Code", 70, 20), ("Data", 300, 50), ("Stack", 350, 100)]}'''
-
 
 processes_dict = {}
 processes_class = {}
